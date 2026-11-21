@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Love Letter 💌</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Mitr:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5d0d0; --bar: #d4a0a0; --border: #b07070;
+    --panel: #f9e8e8; --ink: #5a2020; --accent: #ff6060; --yes: #e05a7a;
+  }
+  [data-theme="sky"]    { --bg:#cfe3f5; --bar:#9fc0de; --border:#5f86ad; --panel:#eaf3fb; --ink:#1f3a5a; --accent:#4f8fe0; --yes:#3d7cc9; }
+  [data-theme="grape"]  { --bg:#e0d0f5; --bar:#b9a0de; --border:#7e5fad; --panel:#f2eafb; --ink:#3a1f5a; --accent:#a060ff; --yes:#8a4fd6; }
+  [data-theme="mint"]   { --bg:#cff5e3; --bar:#9fdec0; --border:#4f9d7a; --panel:#eafbf3; --ink:#1f4a3a; --accent:#ff7a90; --yes:#3aa577; }
+  [data-theme="night"]  { --bg:#2a2340; --bar:#4a3d6e; --border:#8a78c0; --panel:#382f55; --ink:#f3e9ff; --accent:#ff7ab0; --yes:#d9508f; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Press Start 2P', 'Mitr', monospace;
+    color: var(--ink);
+    overflow-x: hidden;
+    padding: 16px;
+    transition: background .4s;
+  }
+  .heart-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .heart-bg span { position: absolute; opacity: .3; animation: floatHeart linear infinite; color: var(--accent); }
+  @keyframes floatHeart {
+    0% { transform: translateY(100vh) rotate(0); opacity: .35; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+  }
+
+  .window {
+    position: relative; z-index: 10;
+    width: 100%; max-width: 380px;
+    border: 3px solid var(--border);
+    box-shadow: 4px 4px 0 var(--border), 8px 8px 0 rgba(0,0,0,.12);
+    background: var(--bg);
+    animation: popIn .5s ease-out;
+  }
+  @keyframes popIn { 0%{transform:scale(.5);opacity:0} 80%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+  .titlebar {
+    background: var(--bar); border-bottom: 3px solid var(--border);
+    padding: 6px 10px; display: flex; align-items: center; justify-content: space-between;
+    font-size: 10px; user-select: none;
+  }
+  .titlebar-btns { display: flex; gap: 5px; }
+  .titlebar-btns div {
+    width: 14px; height: 14px; border: 2px solid var(--border); background: var(--bg);
+    display: flex; align-items: center; justify-content: center; font-size: 7px; cursor: pointer;
+  }
+  .content {
+    background: var(--panel); border: 2px solid var(--bar); margin: 8px; padding: 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;
+    min-height: 280px; position: relative;
+  }
+  .thai { font-family: 'Mitr', sans-serif; }
+  h1 { font-size: 13px; line-height: 1.8; }
+  h1.thai { font-size: 20px; line-height: 1.5; font-weight: 500; }
+  .to-line { font-size: 8px; opacity: .8; }
+  .to-line.thai { font-size: 14px; }
+
+  .cat-svg { width: 96px; height: 96px; image-rendering: pixelated; animation: bob 1.2s steps(2) infinite; }
+  @keyframes bob { 50% { transform: translateY(-4px); } }
+
+  .buttons { display: flex; gap: 16px; align-items: center; justify-content: center; min-height: 60px; flex-wrap: wrap; }
+  .btn {
+    font-family: inherit; font-size: 9px; padding: 10px 14px; cursor: pointer;
+    border: 3px solid var(--border); box-shadow: 3px 3px 0 var(--border);
+    background: var(--bg); color: var(--ink); transition: font-size .2s, padding .2s;
+  }
+  .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--border); }
+  .btn-yes { background: var(--yes); color: #fff; position: relative; z-index: 3; }
+  .btn-no { position: relative; transition: left .15s, top .15s; }
+
+  .final { display: none; flex-direction: column; gap: 12px; align-items: center; }
+  .final .big { font-size: 28px; }
+  .final p { font-size: 9px; line-height: 2; white-space: pre-wrap; }
+  .final p.thai { font-size: 16px; line-height: 1.7; }
+  .from { font-size: 8px; opacity: .8; }
+  .from.thai { font-size: 14px; }
+
+  /* Creator form */
+  form { width: 100%; display: flex; flex-direction: column; gap: 12px; text-align: left; }
+  label { font-size: 8px; display: flex; flex-direction: column; gap: 6px; }
+  input, textarea, select {
+    font-family: 'Mitr', sans-serif; font-size: 15px; padding: 8px;
+    border: 2px solid var(--border); background: #fff; color: #222; width: 100%;
+  }
+  textarea { resize: vertical; min-height: 64px; }
+  .themes { display: flex; gap: 8px; flex-wrap: wrap; }
+  .swatch {
+    width: 32px; height: 32px; border: 3px solid var(--border); cursor: pointer;
+  }
+  .swatch.on { outline: 3px dashed var(--ink); outline-offset: 2px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row .btn { flex: 1; }
+  .share { display: none; flex-direction: column; gap: 8px; width: 100%; }
+  .share input { font-size: 12px; }
+  .hint { font-size: 7px; line-height: 1.8; opacity: .75; }
+  .toast { font-size: 8px; min-height: 10px; }
+
+  .corner-link {
+    position: fixed; bottom: 12px; right: 12px; z-index: 20; font-size: 7px;
+    color: var(--ink); background: var(--panel); border: 2px solid var(--border); padding: 6px 8px; text-decoration: none;
+  }
+  .music-btn { position: fixed; top: 12px; right: 12px; z-index: 20; }
+
+  .confetti-piece { position: fixed; top: -10px; width: 8px; height: 8px; z-index: 50; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body data-theme="pink">
+
+<div class="heart-bg" id="heartBg"></div>
+
+<!-- ===== CREATOR ===== -->
+<div class="window" id="creator" hidden>
+  <div class="titlebar"><span>💌 MAKER.exe</span><div class="titlebar-btns"><div>─</div><div>□</div><div>✕</div></div></div>
+  <div class="content">
+    <h1>Pixel Love<br>Letter</h1>
+    <p class="hint thai" style="font-size:13px">สร้างการ์ดถามคำถามสำคัญ แล้วส่งลิงก์ให้คนพิเศษ</p>
+    <form id="form" autocomplete="off">
+      <label>TO (ถึง)
+        <input id="fTo" maxlength="40" placeholder="ชื่อคนพิเศษ">
+      </label>
+      <label>QUESTION (คำถาม)
+        <input id="fQ" maxlength="80" value="เป็นแฟนกันไหม?">
+      </label>
+      <label>YES MESSAGE (ข้อความเมื่อตอบตกลง)
+        <textarea id="fMsg" maxlength="300">เย้! ดีใจที่สุดเลย 💕
+จากนี้เราเป็นแฟนกันอย่างเป็นทางการแล้วนะ</textarea>
+      </label>
+      <label>FROM (จาก)
+        <input id="fFrom" maxlength="40" placeholder="ชื่อของคุณ">
+      </label>
+      <label>THEME
+        <div class="themes" id="themes"></div>
+      </label>
+      <label>MUSIC
+        <select id="fMusic">
+          <option value="1">🎵 Chiptune เปิด</option>
+          <option value="0">🔇 ไม่มีเพลง</option>
+        </select>
+      </label>
+      <div class="row">
+        <button type="button" class="btn" id="previewBtn">PREVIEW</button>
+        <button type="submit" class="btn btn-yes">MAKE LINK</button>
+      </div>
+    </form>
+    <div class="share" id="share">
+      <input id="shareUrl" readonly>
+      <div class="row">
+        <button class="btn btn-yes" id="copyBtn">COPY</button>
+        <button class="btn" id="nativeShare">SHARE</button>
+      </div>
+      <div class="toast thai" id="toast"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VIEWER ===== -->
+<div class="window" id="viewer" hidden>
+  <div class="titlebar"><span>💌 LOVE.exe</span><div class="titlebar-btns"><div>─</div><div>□</div><div>✕</div></div></div>
+  <div class="content">
+    <div class="to-line" id="vTo"></div>
+    <h1 id="vQ"></h1>
+    <svg class="cat-svg" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="8" width="8" height="6" fill="#2a2a2a"/>
+      <rect x="4" y="3" width="8" height="6" fill="#2a2a2a"/>
+      <rect x="4" y="1" width="2" height="3" fill="#2a2a2a"/>
+      <rect x="10" y="1" width="2" height="3" fill="#2a2a2a"/>
+      <rect x="5" y="5" width="2" height="2" fill="white"/>
+      <rect x="9" y="5" width="2" height="2" fill="white"/>
+      <rect x="6" y="5" width="1" height="2" fill="#1a1a1a"/>
+      <rect x="10" y="5" width="1" height="2" fill="#1a1a1a"/>
+      <rect x="8" y="7" width="1" height="1" fill="#ff8080"/>
+      <rect x="12" y="10" width="2" height="1" fill="#2a2a2a"/>
+      <rect x="13" y="9" width="1" height="1" fill="#2a2a2a"/>
+      <rect x="5" y="14" width="2" height="2" fill="#2a2a2a"/>
+      <rect x="9" y="14" width="2" height="2" fill="#2a2a2a"/>
+      <rect x="6" y="10" width="1" height="1" fill="var(--accent)"/>
+      <rect x="7" y="10" width="1" height="1" fill="var(--accent)"/>
+      <rect x="8" y="10" width="1" height="1" fill="var(--accent)"/>
+      <rect x="9" y="10" width="1" height="1" fill="var(--accent)"/>
+      <rect x="6" y="11" width="4" height="1" fill="var(--accent)"/>
+      <rect x="7" y="12" width="2" height="1" fill="var(--accent)"/>
+    </svg>
+    <div class="buttons" id="vBtns">
+      <button class="btn btn-yes" id="yesBtn">YES 💕</button>
+      <button class="btn btn-no" id="noBtn">NO 😿</button>
+    </div>
+    <div class="final" id="vFinal">
+      <div class="big">🎉💕🎉</div>
+      <p id="vMsg"></p>
+      <div class="from" id="vFrom"></div>
+    </div>
+  </div>
+</div>
+
+<button class="btn music-btn" id="musicBtn" hidden>♪ ON</button>
+<a class="corner-link" id="makeOwn" href="./" hidden>+ MAKE YOUR OWN</a>
+
+<script>
+const THEMES = { pink:'#f5d0d0', sky:'#cfe3f5', grape:'#e0d0f5', mint:'#cff5e3', night:'#2a2340' };
+const $ = id => document.getElementById(id);
+const hasThai = s => /[฀-๿]/.test(s);
+const setText = (el, s) => { el.textContent = s; el.classList.toggle('thai', hasThai(s)); };
+
+// ---------- encode / decode (UTF-8 safe base64url) ----------
+function encode(obj) {
+  const bytes = new TextEncoder().encode(JSON.stringify(obj));
+  let bin = ''; bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function decode(str) {
+  try {
+    const b64 = str.replace(/-/g,'+').replace(/_/g,'/');
+    const bin = atob(b64);
+    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  } catch { return null; }
+}
+
+// ---------- floating hearts ----------
+const bg = $('heartBg');
+const hearts = ['♥','❤','💕','💗','💖','💝','💘'];
+for (let i = 0; i < 25; i++) {
+  const s = document.createElement('span');
+  s.textContent = hearts[i % hearts.length];
+  s.style.left = Math.random()*100 + 'vw';
+  s.style.animationDuration = (6 + Math.random()*8) + 's';
+  s.style.animationDelay = (Math.random()*8) + 's';
+  s.style.fontSize = (10 + Math.random()*14) + 'px';
+  bg.appendChild(s);
+}
+
+function setTheme(t) { document.body.dataset.theme = THEMES[t] ? t : 'pink'; }
+
+// ---------- chiptune (Web Audio square wave) ----------
+let audioCtx = null, musicOn = false, loopTimer = null;
+const MELODY = [ // [midi, beats]
+  [72,1],[76,1],[79,1],[76,1],[77,1],[74,1],[71,2],
+  [72,1],[76,1],[79,1],[84,1],[83,2],[79,2],
+  [77,1],[76,1],[74,1],[72,1],[74,1],[76,1],[79,2],
+  [77,1],[74,1],[71,1],[74,1],[72,4]
+];
+function playMelody() {
+  if (!musicOn) return;
+  const beat = 0.22; let t = audioCtx.currentTime + 0.05;
+  for (const [n, b] of MELODY) {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'square'; o.frequency.value = 440 * Math.pow(2, (n-69)/12);
+    g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.001, t + beat*b*0.95);
+    o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t + beat*b);
+    t += beat*b;
+  }
+  loopTimer = setTimeout(playMelody, (t - audioCtx.currentTime) * 1000);
+}
+function startMusic() {
+  if (musicOn) return;
+  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+  audioCtx.resume(); musicOn = true; $('musicBtn').textContent = '♪ ON'; playMelody();
+}
+function stopMusic() { musicOn = false; clearTimeout(loopTimer); $('musicBtn').textContent = '♪ OFF'; }
+function blip(freq) {
+  if (!audioCtx) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'square'; o.frequency.value = freq; g.gain.value = 0.06;
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+  o.connect(g).connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + 0.12);
+}
+
+// ---------- confetti ----------
+function confetti() {
+  const colors = ['#ff6b9d','#ffd700','#ff4444','#a0e4ff','#b5ead7','#ffb347'];
+  for (let i = 0; i < 70; i++) setTimeout(() => {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.background = colors[i % colors.length];
+    el.style.animationDuration = (1.5 + Math.random()*2) + 's';
+    if (Math.random() > .5) el.style.borderRadius = '50%';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+  }, i*35);
+}
+
+// ---------- VIEWER ----------
+function showViewer(d, isPreview) {
+  $('creator').hidden = true; $('viewer').hidden = false;
+  setTheme(d.t);
+  setText($('vTo'), d.to ? 'ถึง ' + d.to + ' 💌' : '');
+  if (d.to && !hasThai(d.to)) $('vTo').textContent = 'TO: ' + d.to + ' 💌';
+  setText($('vQ'), d.q || 'Will you be my Valentine?');
+  setText($('vMsg'), d.m || 'YAY! 💕');
+  setText($('vFrom'), d.f ? '— ' + d.f : '');
+  $('vBtns').style.display = ''; $('vFinal').style.display = 'none';
+  resetNo();
+
+  if (isPreview) {
+    $('makeOwn').hidden = false; $('makeOwn').textContent = '← BACK TO EDIT';
+    $('makeOwn').onclick = e => { e.preventDefault(); stopMusic(); $('musicBtn').hidden = true; showCreator(); };
+  } else {
+    $('makeOwn').hidden = false;
+  }
+  if (d.mu !== 0) {
+    $('musicBtn').hidden = false; $('musicBtn').textContent = '♪ TAP';
+    // browsers need a user gesture before audio
+    document.addEventListener('pointerdown', startMusic, { once: true });
+  }
+}
+
+let noCount = 0;
+const noBtn = $('noBtn'), yesBtn = $('yesBtn');
+const NO_TEXTS = ['NO 😿','แน่ใจนะ? 🥺','คิดใหม่อีกที 😢','อย่าเลยน้า 😭','กด YES เถอะ 💕'];
+function resetNo() {
+  noCount = 0; noBtn.style.display = ''; noBtn.style.left = noBtn.style.top = '0px';
+  setText(noBtn, NO_TEXTS[0]); yesBtn.style.fontSize = ''; yesBtn.style.padding = '';
+}
+function dodge(e) {
+  e && e.preventDefault();
+  noCount++; blip(220);
+  const range = Math.min(window.innerWidth, 400) / 2.5;
+  noBtn.style.left = ((Math.random()-.5) * range * 2) + 'px';
+  noBtn.style.top  = ((Math.random()-.5) * range) + 'px';
+  setText(noBtn, NO_TEXTS[Math.min(noCount, NO_TEXTS.length-1)]);
+  yesBtn.style.fontSize = Math.min(9 + noCount*1.5, 18) + 'px';
+  yesBtn.style.padding = (10 + noCount*2) + 'px ' + (14 + noCount*4) + 'px';
+  if (noCount >= 7) noBtn.style.display = 'none';
+}
+noBtn.addEventListener('mouseenter', dodge);
+noBtn.addEventListener('touchstart', dodge, { passive: false });
+noBtn.addEventListener('click', dodge);
+yesBtn.addEventListener('click', () => {
+  [523,659,784,1047].forEach((f,i) => setTimeout(() => blip(f), i*90));
+  $('vBtns').style.display = 'none'; $('vQ').style.display = 'none';
+  $('vFinal').style.display = 'flex';
+  confetti();
+});
+$('musicBtn').addEventListener('click', e => { e.stopPropagation(); musicOn ? stopMusic() : startMusic(); });
+
+// ---------- CREATOR ----------
+let theme = 'pink';
+function showCreator() {
+  $('viewer').hidden = true; $('creator').hidden = false; $('makeOwn').hidden = true;
+  $('vQ').style.display = '';
+  setTheme(theme);
+}
+Object.entries(THEMES).forEach(([name, color]) => {
+  const s = document.createElement('div');
+  s.className = 'swatch' + (name === theme ? ' on' : '');
+  s.style.background = color; s.title = name;
+  s.onclick = () => {
+    theme = name; setTheme(name);
+    document.querySelectorAll('.swatch').forEach(x => x.classList.toggle('on', x === s));
+  };
+  $('themes').appendChild(s);
+});
+function formData() {
+  return {
+    to: $('fTo').value.trim(), q: $('fQ').value.trim(), m: $('fMsg').value.trim(),
+    f: $('fFrom').value.trim(), t: theme, mu: +$('fMusic').value
+  };
+}
+$('previewBtn').onclick = () => showViewer(formData(), true);
+$('form').onsubmit = e => {
+  e.preventDefault();
+  const url = location.origin + location.pathname + '#' + encode(formData());
+  $('shareUrl').value = url; $('share').style.display = 'flex';
+  $('toast').textContent = '';
+};
+$('copyBtn').onclick = async () => {
+  try { await navigator.clipboard.writeText($('shareUrl').value); }
+  catch { $('shareUrl').select(); document.execCommand('copy'); }
+  $('toast').textContent = 'คัดลอกแล้ว! ส่งให้คนพิเศษได้เลย 💕';
+};
+$('nativeShare').onclick = () => {
+  if (navigator.share) navigator.share({ title: '💌', url: $('shareUrl').value }).catch(() => {});
+  else $('copyBtn').click();
+};
+
+// ---------- route ----------
+const data = location.hash.length > 1 ? decode(location.hash.slice(1)) : null;
+data ? showViewer(data, false) : showCreator();
+</script>
+</body>
+</html>
