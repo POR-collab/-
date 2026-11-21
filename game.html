@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Heart Catcher 🐱</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  canvas {
+    width: 100%; max-width: 320px; aspect-ratio: 1; image-rendering: pixelated;
+    border: 3px solid var(--border); background: var(--bg); touch-action: none; display: block;
+  }
+  .hud { display: flex; justify-content: space-between; width: 100%; max-width: 320px; font-size: 8px; }
+  .pad { display: flex; gap: 12px; width: 100%; max-width: 320px; }
+  .pad .btn { flex: 1; font-size: 14px; padding: 14px; user-select: none; -webkit-user-select: none; touch-action: none; }
+  .overlay { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+  .secret { font-size: 16px; line-height: 1.7; white-space: pre-wrap; }
+  .small { font-size: 7px; line-height: 1.8; opacity: .8; }
+</style>
+</head>
+<body data-theme="pink">
+<a class="home-link" href="./hub.html">← ALL</a>
+
+<!-- CREATOR -->
+<div class="window" id="creator" hidden>
+  <div class="titlebar"><span>🐱 GAME.exe</span><div class="titlebar-btns"><div>─</div><div>□</div><div>✕</div></div></div>
+  <div class="content">
+    <h1>Heart<br>Catcher</h1>
+    <p class="hint thai">มินิเกมรับหัวใจ เก็บให้ครบแล้วจะเห็นข้อความลับของคุณ</p>
+    <form id="form" autocomplete="off">
+      <label>TO (ถึง)<input id="fTo" maxlength="40" placeholder="ชื่อคนพิเศษ"></label>
+      <label>SECRET MESSAGE (ข้อความลับ)
+        <textarea id="fMsg" maxlength="300">เก่งมาก! 🏆
+รางวัลของเธอคือ... เค้าไง 💕</textarea>
+      </label>
+      <label>HEARTS TO WIN (จำนวนหัวใจ)
+        <select id="fGoal"><option>5</option><option selected>10</option><option>15</option><option>20</option></select>
+      </label>
+      <label>FROM (จาก)<input id="fFrom" maxlength="40" placeholder="ชื่อของคุณ"></label>
+      <label>THEME<div class="themes" id="themes"></div></label>
+      <div class="row">
+        <button type="button" class="btn" id="previewBtn">PLAY TEST</button>
+        <button type="submit" class="btn btn-yes">MAKE LINK</button>
+      </div>
+    </form>
+    <div class="share" id="shareBox">
+      <input id="shareUrl" readonly>
+      <div class="row"><button class="btn btn-yes" id="copyBtn">COPY</button><button class="btn" id="nativeShare">SHARE</button></div>
+      <div class="toast thai" id="toast"></div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEWER -->
+<div class="window" id="viewer" hidden>
+  <div class="titlebar"><span>🐱 GAME.exe</span><div class="titlebar-btns"><div>─</div><div>□</div><div>✕</div></div></div>
+  <div class="content">
+    <div class="thai" id="vTo" style="font-size:14px"></div>
+    <div class="hud"><span id="score">♥ 0/10</span><span id="lives">LIFE ❤❤❤</span></div>
+    <canvas id="cv" width="160" height="160"></canvas>
+    <div class="pad"><button class="btn" id="leftBtn">◀</button><button class="btn" id="rightBtn">▶</button></div>
+    <div class="overlay" id="startBox">
+      <div class="small">CATCH ♥ · AVOID 💔<br>← → / A D / TAP</div>
+      <button class="btn btn-yes" id="startBtn">START</button>
+    </div>
+    <div class="overlay" id="winBox" hidden>
+      <div style="font-size:28px">🎉💕🎉</div>
+      <p class="secret thai" id="vMsg"></p>
+      <div class="thai" id="vFrom" style="font-size:14px;opacity:.8"></div>
+      <button class="btn" id="againBtn">PLAY AGAIN</button>
+    </div>
+    <div class="overlay" id="loseBox" hidden>
+      <div class="thai" style="font-size:16px">อุ๊ย! ลองใหม่นะ 🥺</div>
+      <button class="btn btn-yes" id="retryBtn">RETRY</button>
+    </div>
+  </div>
+</div>
+
+<a class="corner-link" id="corner" href="game.html" hidden>+ MAKE YOUR OWN</a>
+
+<script src="shared.js"></script>
+<script>
+floatingHearts(15);
+const cv = $('cv'), g = cv.getContext('2d');
+const W = 160, H = 160;
+
+// pixel sprites: '.'=empty, letters map to colors
+const CAT = [
+  'k.......k.',
+  'kk.....kk.',
+  'kkkkkkkkk.',
+  'kwwkkkwwk.',
+  'kwbkkkwbk.',
+  'kkkkpkkkk.',
+  'kkkkkkkkk.',
+  '.krrkrrk.t',
+  '.krrrrrk.t',
+  '.kkrrrkk.t',
+  '.kkkrkkkkt',
+  '.kk...kk..',
+];
+const HEART = ['.rr.rr.','rrrrrrr','rrrrrrr','.rrrrr.','..rrr..','...r...'];
+const BROKEN= ['.gg.gg.','ggg.ggg','gg.ggg.','.gg.gg.','..g.g..','...g...'];
+function colors() {
+  const cs = getComputedStyle(document.body);
+  return { k:'#2a2a2a', w:'#fff', b:'#1a1a1a', p:'#ff8080', t:'#2a2a2a',
+           r: cs.getPropertyValue('--accent').trim() || '#ff6060', g:'#777' };
+}
+let C = colors();
+function sprite(rows, x, y) {
+  rows.forEach((row, j) => [...row].forEach((ch, i) => {
+    if (ch === '.') return; g.fillStyle = C[ch]; g.fillRect(Math.round(x)+i, Math.round(y)+j, 1, 1);
+  }));
+}
+
+let D = null, state, keys = { l:false, r:false }, raf = null;
+function reset() {
+  state = { x: W/2 - 5, items: [], score: 0, lives: 3, t: 0, spawn: 0, running: false, flash: 0 };
+  hud(); draw();
+}
+function hud() {
+  $('score').textContent = `♥ ${state.score}/${D.g}`;
+  $('lives').textContent = 'LIFE ' + '❤'.repeat(state.lives) + '·'.repeat(3 - state.lives);
+}
+function start() {
+  reset(); state.running = true;
+  $('startBox').hidden = $('winBox').hidden = $('loseBox').hidden = true;
+  cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(loop);
+}
+let last = 0;
+function loop(now) {
+  const dt = Math.min((now - last) / 16.67, 3); last = now;
+  update(dt); draw();
+  if (state.running) raf = requestAnimationFrame(loop);
+}
+function update(dt) {
+  state.t += dt;
+  const speed = 1.6;
+  if (keys.l) state.x -= speed * dt;
+  if (keys.r) state.x += speed * dt;
+  state.x = Math.max(0, Math.min(W - 10, state.x));
+  // difficulty ramps with score
+  const rate = Math.max(22, 50 - state.score * 2);
+  state.spawn -= dt;
+  if (state.spawn <= 0) {
+    state.spawn = rate;
+    const bad = Math.random() < 0.25 + state.score * 0.01;
+    state.items.push({ x: Math.random() * (W - 7), y: -6, v: 0.55 + Math.random()*0.35 + state.score*0.03, bad });
+  }
+  const catY = H - 14;
+  state.items = state.items.filter(it => {
+    it.y += it.v * dt;
+    const hit = state.running && it.y + 6 >= catY && it.y <= catY + 8 && it.x + 7 > state.x && it.x < state.x + 10;
+    if (hit) {
+      if (it.bad) { state.lives--; state.flash = 10; blip(120, .25); }
+      else { state.score++; blip(660 + state.score * 20); }
+      hud(); checkEnd(); return false;
+    }
+    return it.y < H;
+  });
+  if (state.flash > 0) state.flash -= dt;
+}
+function checkEnd() {
+  if (state.score >= D.g) {
+    state.running = false; $('winBox').hidden = false;
+    [523,659,784,1047].forEach((f,i) => setTimeout(() => blip(f, .2), i*100));
+    confetti();
+  } else if (state.lives <= 0) {
+    state.running = false; $('loseBox').hidden = false;
+  }
+}
+function draw() {
+  g.clearRect(0, 0, W, H);
+  // ground
+  g.fillStyle = getComputedStyle(document.body).getPropertyValue('--bar'); g.fillRect(0, H - 2, W, 2);
+  state.items.forEach(it => sprite(it.bad ? BROKEN : HEART, it.x, it.y));
+  if (state.flash > 0 && Math.floor(state.flash) % 2) return;
+  sprite(CAT, state.x, H - 14);
+}
+
+// controls
+addEventListener('keydown', e => {
+  if (['ArrowLeft','a','A'].includes(e.key)) keys.l = true;
+  if (['ArrowRight','d','D'].includes(e.key)) keys.r = true;
+});
+addEventListener('keyup', e => {
+  if (['ArrowLeft','a','A'].includes(e.key)) keys.l = false;
+  if (['ArrowRight','d','D'].includes(e.key)) keys.r = false;
+});
+function hold(btn, k) {
+  const on = e => { e.preventDefault(); keys[k] = true; }, off = () => keys[k] = false;
+  btn.addEventListener('pointerdown', on); btn.addEventListener('pointerup', off);
+  btn.addEventListener('pointerleave', off); btn.addEventListener('pointercancel', off);
+}
+hold($('leftBtn'), 'l'); hold($('rightBtn'), 'r');
+cv.addEventListener('pointermove', e => {
+  if (e.pointerType === 'mouse' && !e.buttons) return;
+  const r = cv.getBoundingClientRect();
+  state.x = Math.max(0, Math.min(W - 10, (e.clientX - r.left) / r.width * W - 5));
+});
+cv.addEventListener('pointerdown', e => cv.dispatchEvent(new PointerEvent('pointermove', e)));
+$('startBtn').onclick = start; $('retryBtn').onclick = start; $('againBtn').onclick = start;
+
+// ----- creator -----
+let theme = 'pink';
+themePicker($('themes'), theme, t => theme = t);
+const formData = () => ({ to: $('fTo').value.trim(), m: $('fMsg').value.trim(), g: +$('fGoal').value, f: $('fFrom').value.trim(), t: theme });
+$('previewBtn').onclick = () => showViewer(formData(), true);
+$('form').onsubmit = e => { e.preventDefault(); wireShare(formData); };
+
+function showViewer(d, preview) {
+  D = { ...d, g: Math.max(1, Math.min(50, +d.g || 10)) };
+  $('creator').hidden = true; $('viewer').hidden = false;
+  setTheme(d.t); C = colors();
+  setText($('vTo'), d.to ? 'ถึง ' + d.to + ' 💌' : '');
+  setText($('vMsg'), d.m || 'YOU WIN! 💕');
+  setText($('vFrom'), d.f ? '— ' + d.f : '');
+  $('startBox').hidden = false; $('winBox').hidden = $('loseBox').hidden = true;
+  reset();
+  $('corner').hidden = false;
+  if (preview) {
+    $('corner').textContent = '← BACK TO EDIT';
+    $('corner').onclick = e => { e.preventDefault(); state.running = false; $('viewer').hidden = true; $('creator').hidden = false; $('corner').hidden = true; };
+  }
+}
+
+const data = hashData();
+if (data) showViewer(data, false);
+else { $('creator').hidden = false; setTheme(theme); }
+</script>
+</body>
+</html>

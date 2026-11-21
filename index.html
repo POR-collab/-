@@ -117,6 +117,7 @@
 <body data-theme="pink">
 
 <div class="heart-bg" id="heartBg"></div>
+<a class="corner-link" id="hubLink" href="hub.html" style="top:12px;left:12px;right:auto;bottom:auto">← ALL</a>
 
 <!-- ===== CREATOR ===== -->
 <div class="window" id="creator" hidden>
@@ -292,7 +293,7 @@ function confetti() {
 
 // ---------- VIEWER ----------
 function showViewer(d, isPreview) {
-  $('creator').hidden = true; $('viewer').hidden = false;
+  $('creator').hidden = true; $('viewer').hidden = false; $('hubLink').hidden = true;
   setTheme(d.t);
   setText($('vTo'), d.to ? 'ถึง ' + d.to + ' 💌' : '');
   if (d.to && !hasThai(d.to)) $('vTo').textContent = 'TO: ' + d.to + ' 💌';
@@ -347,7 +348,7 @@ $('musicBtn').addEventListener('click', e => { e.stopPropagation(); musicOn ? st
 // ---------- CREATOR ----------
 let theme = 'pink';
 function showCreator() {
-  $('viewer').hidden = true; $('creator').hidden = false; $('makeOwn').hidden = true;
+  $('viewer').hidden = true; $('creator').hidden = false; $('makeOwn').hidden = true; $('hubLink').hidden = false;
   $('vQ').style.display = '';
   setTheme(theme);
 }

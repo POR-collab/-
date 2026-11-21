@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Mitr:wght@400;500&display=swap');
+:root { --bg:#f5d0d0; --bar:#d4a0a0; --border:#b07070; --panel:#f9e8e8; --ink:#5a2020; --accent:#ff6060; --yes:#e05a7a; }
+[data-theme="sky"]   { --bg:#cfe3f5; --bar:#9fc0de; --border:#5f86ad; --panel:#eaf3fb; --ink:#1f3a5a; --accent:#4f8fe0; --yes:#3d7cc9; }
+[data-theme="grape"] { --bg:#e0d0f5; --bar:#b9a0de; --border:#7e5fad; --panel:#f2eafb; --ink:#3a1f5a; --accent:#a060ff; --yes:#8a4fd6; }
+[data-theme="mint"]  { --bg:#cff5e3; --bar:#9fdec0; --border:#4f9d7a; --panel:#eafbf3; --ink:#1f4a3a; --accent:#ff7a90; --yes:#3aa577; }
+[data-theme="night"] { --bg:#2a2340; --bar:#4a3d6e; --border:#8a78c0; --panel:#382f55; --ink:#f3e9ff; --accent:#ff7ab0; --yes:#d9508f; }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink); min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Press Start 2P', 'Mitr', monospace; padding: 16px; overflow-x: hidden;
+  transition: background .4s;
+}
+.thai { font-family: 'Mitr', sans-serif; }
+.heart-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.heart-bg span { position: absolute; opacity: .3; color: var(--accent); animation: floatHeart linear infinite; }
+@keyframes floatHeart { 0%{transform:translateY(100vh) rotate(0);opacity:.35} 100%{transform:translateY(-10vh) rotate(360deg);opacity:0} }
+
+.window {
+  position: relative; z-index: 10; width: 100%; max-width: 380px;
+  border: 3px solid var(--border); box-shadow: 4px 4px 0 var(--border), 8px 8px 0 rgba(0,0,0,.12);
+  background: var(--bg); animation: popIn .5s ease-out;
+}
+.window.wide { max-width: 520px; }
+@keyframes popIn { 0%{transform:scale(.5);opacity:0} 80%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+.titlebar {
+  background: var(--bar); border-bottom: 3px solid var(--border); padding: 6px 10px;
+  display: flex; align-items: center; justify-content: space-between; font-size: 10px; user-select: none;
+}
+.titlebar-btns { display: flex; gap: 5px; }
+.titlebar-btns div, .titlebar-btns button {
+  width: 16px; height: 16px; border: 2px solid var(--border); background: var(--bg); color: var(--ink);
+  display: flex; align-items: center; justify-content: center; font-size: 7px; cursor: pointer; font-family: inherit;
+}
+.content {
+  background: var(--panel); border: 2px solid var(--bar); margin: 8px; padding: 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; position: relative;
+}
+h1 { font-size: 13px; line-height: 1.8; }
+h1.thai { font-size: 20px; line-height: 1.5; font-weight: 500; }
+
+.btn {
+  font-family: inherit; font-size: 9px; padding: 10px 14px; cursor: pointer;
+  border: 3px solid var(--border); box-shadow: 3px 3px 0 var(--border);
+  background: var(--bg); color: var(--ink); text-decoration: none; display: inline-block;
+}
+.btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--border); }
+.btn-yes { background: var(--yes); color: #fff; }
+
+form { width: 100%; display: flex; flex-direction: column; gap: 12px; text-align: left; }
+label { font-size: 8px; display: flex; flex-direction: column; gap: 6px; }
+input, textarea, select {
+  font-family: 'Mitr', sans-serif; font-size: 15px; padding: 8px;
+  border: 2px solid var(--border); background: #fff; color: #222; width: 100%;
+}
+textarea { resize: vertical; min-height: 64px; }
+.themes { display: flex; gap: 8px; flex-wrap: wrap; }
+.swatch { width: 32px; height: 32px; border: 3px solid var(--border); cursor: pointer; }
+.swatch.on { outline: 3px dashed var(--ink); outline-offset: 2px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; width: 100%; }
+.row .btn { flex: 1; }
+.share { display: none; flex-direction: column; gap: 8px; width: 100%; }
+.share input { font-size: 12px; }
+.hint { font-size: 13px; line-height: 1.6; opacity: .8; }
+.toast { font-size: 13px; min-height: 10px; }
+
+.corner-link {
+  position: fixed; bottom: 12px; right: 12px; z-index: 40; font-size: 7px; color: var(--ink);
+  background: var(--panel); border: 2px solid var(--border); padding: 6px 8px; text-decoration: none;
+}
+.home-link { position: fixed; top: 12px; left: 12px; z-index: 40; font-size: 7px; color: var(--ink);
+  background: var(--panel); border: 2px solid var(--border); padding: 6px 8px; text-decoration: none; }
+.confetti-piece { position: fixed; top: -10px; width: 8px; height: 8px; z-index: 200; animation: fall linear forwards; }
+@keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love Countdown ⏳</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .timer { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .unit { background: var(--bg); border: 3px solid var(--border); padding: 10px 6px; min-width: 64px; }
+  .unit b { display: block; font-size: 18px; margin-bottom: 8px; }
+  .unit span { font-size: 6px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; width: 100%; }
+  .box {
+    aspect-ratio: 1; border: 3px solid var(--border); background: var(--bg); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    font-family: inherit; color: var(--ink); font-size: 7px; box-shadow: 2px 2px 0 var(--border);
+  }
+  .box .ico { font-size: 20px; }
+  .box.open { background: var(--yes); color: #fff; }
+  .box.locked { opacity: .55; }
+  .box.today { animation: pulse 1s steps(2) infinite; }
+  @keyframes pulse { 50% { transform: scale(1.06); } }
+  .shake { animation: shake .3s; }
+  @keyframes shake { 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px; }
+  .modal .window { max-width: 340px; }
+  .modal p { font-size: 16px; line-height: 1.7; white-space: pre-wrap; }
+  .done { font-size: 14px; line-height: 1.8; }
+  .msgline { font-size: 7px; opacity: .7; }
+</style>
+</head>
+<body data-theme="pink">
+<a class="home-link" href="./hub.html">← ALL</a>
+
+<!-- CREATOR -->
+<div class="window" id="creator" hidden>
+  <div class="titlebar"><span>⏳ COUNTDOWN.exe</span><div class="titlebar-btns"><div>─</div><div>□</div><div>✕</div></div></div>
+  <div class="content">
+    <h1>Love<br>Countdown</h1>
+    <p class="hint thai">นับถอยหลังสู่วันสำคัญ แต่ละวันมีกล่องเซอร์ไพรส์ให้เปิด</p>
+    <form id="form" autocomplete="off">
+      <label>TITLE (ชื่อวันสำคัญ)<input id="fTitle" maxlength="60" value="ครบรอบ 1 ปีของเรา"></label>
+      <label>DATE (วันที่)<input id="fDate" type="datetime-local"></label>
+      <label>SURPRISES (บรรทัดละ 1 วัน เรียงจากวันแรกถึงวันสุดท้าย)
+        <textarea id="fMsgs" rows="6">คิดถึงนะ 💭
+จำวันแรกที่เจอกันได้ไหม?
+อีกนิดเดียวแล้ว!
+พรุ่งนี้แล้วนะ 🥰
+สุขสันต์วันครบรอบ! รักที่สุดเลย 💕</textarea>
+      </label>
+      <label>FROM (จาก)<input id="fFrom" maxlength="40" placeholder="ชื่อของคุณ"></label>
+      <label>THEME<div class="themes" id="themes"></div></label>
+      <div class="row">
+        <button type="button" class="btn" id="previewBtn">PREVIEW</button>
+        <button type="submit" class="btn btn-yes">MAKE LINK</button>
+      </div>
+    </form>
+    <div class="share" id="shareBox">
+      <input id="shareUrl" readonly>
+      <div class="row"><button class="btn btn-yes" id="copyBtn">COPY</button><button class="btn" id="nativeShare">SHARE</button></div>
+      <div class="toast thai" id="toast"></div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEWER -->
+<div class="window wide" id="viewer" hidden>
+  <div class="titlebar"><span>⏳ COUNTDOWN.exe</span><div class="titlebar-btns"><div>─</div><div>□</div><div>✕</div></div></div>
+  <div class="content">
+    <h1 id="vTitle"></h1>
+    <div class="timer" id="timer">
+      <div class="unit"><b id="tD">0</b><span>DAYS</span></div>
+      <div class="unit"><b id="tH">0</b><span>HRS</span></div>
+      <div class="unit"><b id="tM">0</b><span>MIN</span></div>
+      <div class="unit"><b id="tS">0</b><span>SEC</span></div>
+    </div>
+    <div class="done thai" id="done" hidden>🎉 ถึงวันแล้ว! 🎉</div>
+    <div class="msgline">TAP A BOX TO OPEN</div>
+    <div class="grid" id="grid"></div>
+    <div class="thai" id="vFrom" style="font-size:14px;opacity:.8"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="window">
+    <div class="titlebar"><span id="mTitle">💌 DAY</span><div class="titlebar-btns"><button id="mClose">✕</button></div></div>
+    <div class="content"><div style="font-size:28px">💝</div><p class="thai" id="mText"></p></div>
+  </div>
+</div>
+
+<a class="corner-link" id="corner" href="countdown.html" hidden>+ MAKE YOUR OWN</a>
+
+<script src="shared.js"></script>
+<script>
+floatingHearts();
+const DAY = 86400000;
+const pad = n => String(n).padStart(2, '0');
+let timerId = null;
+
+// ----- creator -----
+let theme = 'pink';
+const def = new Date(Date.now() + 4*DAY); def.setHours(19, 0, 0, 0);
+$('fDate').value = `${def.getFullYear()}-${pad(def.getMonth()+1)}-${pad(def.getDate())}T19:00`;
+themePicker($('themes'), theme, t => theme = t);
+function formData() {
+  return {
+    ti: $('fTitle').value.trim(), d: new Date($('fDate').value).getTime(),
+    ms: $('fMsgs').value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 60),
+    f: $('fFrom').value.trim(), t: theme
+  };
+}
+$('previewBtn').onclick = () => { const d = formData(); if (valid(d)) showViewer(d, true); };
+$('form').onsubmit = e => { e.preventDefault(); if (valid(formData())) wireShare(formData); };
+function valid(d) {
+  if (!d.d || isNaN(d.d)) { alert('กรุณาเลือกวันที่'); return false; }
+  if (!d.ms.length) d.ms = ['💕'];
+  return true;
+}
+
+// ----- viewer -----
+function startOfDay(ts) { const x = new Date(ts); x.setHours(0,0,0,0); return x.getTime(); }
+function showViewer(d, preview) {
+  $('creator').hidden = true; $('viewer').hidden = false;
+  setTheme(d.t);
+  setText($('vTitle'), d.ti || 'Our Special Day');
+  setText($('vFrom'), d.f ? '— ' + d.f : '');
+  const n = d.ms.length, target = startOfDay(d.d);
+  const grid = $('grid'); grid.innerHTML = '';
+  const today = startOfDay(Date.now());
+  d.ms.forEach((msg, i) => {
+    const unlock = target - (n - 1 - i) * DAY;
+    const date = new Date(unlock);
+    const b = document.createElement('button');
+    const isOpen = today >= unlock;
+    b.className = 'box ' + (isOpen ? 'open' : 'locked') + (today === unlock ? ' today' : '');
+    b.innerHTML = `<span class="ico">${isOpen ? '🎁' : '🔒'}</span><span>${pad(date.getDate())}/${pad(date.getMonth()+1)}</span>`;
+    b.onclick = () => {
+      if (!isOpen) {
+        b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); blip(160);
+        return;
+      }
+      [523,659,784].forEach((f,k) => setTimeout(() => blip(f), k*80));
+      $('mTitle').textContent = `💌 DAY ${i+1}`;
+      setText($('mText'), msg);
+      $('modal').style.display = 'flex';
+    };
+    grid.appendChild(b);
+  });
+  if (preview) {
+    $('corner').hidden = false; $('corner').textContent = '← BACK TO EDIT';
+    $('corner').onclick = e => { e.preventDefault(); clearInterval(timerId); $('viewer').hidden = true; $('creator').hidden = false; $('corner').hidden = true; };
+  } else $('corner').hidden = false;
+
+  clearInterval(timerId);
+  let celebrated = false;
+  const tick = () => {
+    const left = d.d - Date.now();
+    if (left <= 0) {
+      $('timer').hidden = true; $('done').hidden = false;
+      if (!celebrated) { celebrated = true; confetti(); }
+      return;
+    }
+    $('timer').hidden = false; $('done').hidden = true;
+    $('tD').textContent = Math.floor(left / DAY);
+    $('tH').textContent = pad(Math.floor(left / 3600000) % 24);
+    $('tM').textContent = pad(Math.floor(left / 60000) % 60);
+    $('tS').textContent = pad(Math.floor(left / 1000) % 60);
+  };
+  tick(); timerId = setInterval(tick, 1000);
+}
+$('mClose').onclick = () => $('modal').style.display = 'none';
+$('modal').onclick = e => { if (e.target === $('modal')) $('modal').style.display = 'none'; };
+
+const data = hashData();
+if (data && data.d) showViewer(data, false);
+else { $('creator').hidden = false; setTheme(theme); }
+</script>
+</body>
+</html>

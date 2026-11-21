@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Love Kit 💕</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .apps { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+  .app {
+    display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 8px;
+    border: 3px solid var(--border); box-shadow: 3px 3px 0 var(--border); background: var(--bg);
+    color: var(--ink); text-decoration: none; font-size: 7px; line-height: 1.6;
+  }
+  .app:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--border); }
+  .app .ico { font-size: 30px; }
+  .app .desc { font-family: 'Mitr', sans-serif; font-size: 12px; opacity: .8; }
+</style>
+</head>
+<body data-theme="pink">
+<div class="window">
+  <div class="titlebar"><span>💕 LOVEKIT.exe</span><div class="titlebar-btns"><div>─</div><div>□</div><div>✕</div></div></div>
+  <div class="content">
+    <h1>Pixel<br>Love Kit</h1>
+    <p class="hint thai">เลือกสิ่งที่อยากสร้าง แล้วส่งลิงก์ให้คนพิเศษ</p>
+    <div class="apps">
+      <a class="app" href="index.html"><span class="ico">💌</span>LOVE LETTER<span class="desc">ถามคำถามสำคัญ</span></a>
+      <a class="app" href="countdown.html"><span class="ico">⏳</span>COUNTDOWN<span class="desc">นับถอยหลังวันพิเศษ</span></a>
+      <a class="app" href="game.html"><span class="ico">🐱</span>HEART GAME<span class="desc">เกมเก็บหัวใจ</span></a>
+      <a class="app" href="memories.html"><span class="ico">📁</span>MEMORIES<span class="desc">รวมความทรงจำ</span></a>
+    </div>
+  </div>
+</div>
+<script src="shared.js"></script>
+<script>floatingHearts();</script>
+</body>
+</html>
